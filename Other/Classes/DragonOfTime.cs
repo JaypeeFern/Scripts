@@ -180,6 +180,7 @@ public class DragonOfTime
 
             Core.EquipClass(ClassType.Solo);
             Adv.BoostHuntMonster("ivoliss", "Ivoliss", "Sword of Voids", isTemp: false);
+            Bot.Wait.ForPickup("Sword of Voids");
 
             Darkon.FarmReceipt(100);
 
@@ -191,10 +192,11 @@ public class DragonOfTime
                 Core.EquipClass(ClassType.Solo);
                 Core.HuntMonster("guardiantree", "Terrane", "Terrane Defeated");
                 Core.EnsureComplete(6286);
+                Bot.Wait.ForPickup("Semiramis Feather");
             }
 
             Core.EquipClass(ClassType.Farm);
-            Adv.BoostKillMonster("aqw3d", "r13", "Bottom", "*", "Cross-Dimensional Weapons", 300, isTemp: false, publicRoom: true);
+            Core.KillMonster("aqw3d", "r13", "Bottom", "*", "Cross-Dimensional Weapons", 300, isTemp: false, publicRoom: true);
 
             SP.ShiftingPyramidSaga();
             if (!Core.CheckInventory("Starlight Singularity"))
@@ -204,12 +206,15 @@ public class DragonOfTime
                 Core.EquipClass(ClassType.Solo);
                 Core.HuntMonster("whitehole", "Mehensi Serpent", "Mehen Slain");
                 Core.EnsureComplete(5186);
+                Bot.Wait.ForPickup("Starlight Singularity");
             }
 
             Coll.CollectionStory();
             Core.BuyItem("collection", 325, "Collectible Collector");
+            Bot.Wait.ForPickup("Collectible Collector");
 
             Story.ChainQuest(7721);
+
             Bot.Wait.ForPickup("*");
             Core.ToBank("Ascended Dragon of Time Runes", "Runes Of Time");
         }
@@ -228,7 +233,7 @@ public class DragonOfTime
 
             Adv.BoostHuntMonster("underlair", "ArchFiend Dragonlord", "Dragon's Plasma", 20, false, publicRoom: true);
 
-            Adv.BoostHuntMonster("chaoskraken", "Chaos Kraken", "Chaotic Invertebrae", 20, false, publicRoom: true);
+            Core.HuntMonster("chaoskraken", "Chaos Kraken", "Chaotic Invertebrae", 20, false, publicRoom: true);
 
             Bot.Quests.UpdateQuest(9, 159);
             Adv.BoostHuntMonster("towerofdoom9", "Dread Fang", "Cryostatic Essence", 20, false, publicRoom: true);

@@ -1,4 +1,4 @@
-﻿//cs_include Scripts/CoreBots.cs
+//cs_include Scripts/CoreBots.cs
 //cs_include Scripts/CoreFarms.cs
 //cs_include Scripts/Nulgath/CoreNulgath.cs
 using RBot;
@@ -63,7 +63,7 @@ public class WillpowerExtraction
                 {
                     if (!Core.CheckInventory("Gold Voucher 100k", 3))
                         Core.BuyItem("alchemyacademy", 395, "Gold Voucher 100k", 3, 1);
-                    Core.BuyItem("alchemyacademy", 395, 7132, 3);
+                    Core.BuyItem("alchemyacademy", 395, "Dragon Runestone", 3);
                     Bot.Wait.ForPickup("Dragon Runestone");
                 }
                 Core.BuyItem("alchemyacademy", 397, "Necrot", 5, 2);
@@ -77,11 +77,11 @@ public class WillpowerExtraction
                 Core.BuyItem("tercessuinotlim", 1951, "Chaoroot", 5, 10);
             }
 
-            if (!Core.CheckInventory("Doomatter", 10))
+            if (!Core.CheckInventory("Doomatter", 5))
             {
                 Farm.Gold(300000);
                 Core.BuyItem("tercessuinotlim", 1951, "Receipt of Swindle");
-                Core.BuyItem("tercessuinotlim", 1951, "Doomatter", 10, 10);
+                Core.BuyItem("tercessuinotlim", 1951, "Doomatter", 10, 1);
             }
 
             Core.EquipClass(ClassType.Solo);

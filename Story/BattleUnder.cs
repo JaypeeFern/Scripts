@@ -69,8 +69,8 @@ public class BattleUnder
 
         BattleUnderB();
 
-        Story.KillQuest(936, "battleunderc", "Blue Crystalized Undead|Green Crystalized Undead|Purple Crystalized Undead");
-        Story.KillQuest(937, "battleunderc", "Blue Crystalized Undead|Green Crystalized Undead|Purple Crystalized Undead|Purple Crystalized Jellyfish");
+        Story.KillQuest(936, "battleunderc", "Blue Crystalized Undead");
+        Story.KillQuest(937, "battleunderc", "Blue Crystalized Undead");
         Story.KillQuest(938, "battleunderc", "Crystalized Jellyfish");
         if (!Story.QuestProgression(939))
         {
@@ -89,14 +89,40 @@ public class BattleUnder
 
         Story.PreLoad();
 
+        Core.AddDrop("Battle Pickaxe");
         BattleUnderC();
 
-        Story.KillQuest(2211, "battleunderd", "Shivering Bones");
-        Story.MapItemQuest(2212, "battleunderd", 1286, 8);
-        Story.KillQuest(2212, "battleunderd", "Icy Banshee");
-        Story.KillQuest(2213, "battleunderd", "Skeletal Warrior");
-        Story.MapItemQuest(2214, "battleunderd", 1287, 4);
-        Story.KillQuest(2214, "battleunderd", "Glacial Horror");
+        //Note; Mobs on the map are randomly spawned / room 
+        //with 3 or 4 spawns sets that can be made/room.. thus breaking hunt(and killquest)
+
+        if (!Story.QuestProgression(2211))
+        {
+            Core.EnsureAccept(2211);
+            Core.KillMonster("battleunderd", "Enter", "Spawn", "Shivering Bones", "Shivering Bone", 10);
+            Core.EnsureComplete(2211);
+        }
+
+        if (!Story.QuestProgression(2212))
+        {
+            Core.EnsureAccept(2212);
+            Core.KillMonster("battleunderd", "r2", "Left", "Icy Banshee", "Banshee Slain", 7);
+            Story.MapItemQuest(2212, "battleunderd", 1286, 8);
+        }
+
+        if (!Story.QuestProgression(2213))
+        {
+            Core.EnsureAccept(2213);
+            Core.KillMonster("battleunderd", "r5", "Left", "Skeletal Warrior", "Icy Pickaxe Found");
+            Core.EnsureComplete(2213);
+        }
+
+        if (!Story.QuestProgression(2214))
+        {
+            Core.EnsureAccept(2214);
+            Core.KillMonster("battleunderd", "r5", "Left", "Glacial Horror", "Glacial Slain");
+            Story.MapItemQuest(2214, "battleunderd", 1287, 4);
+        }
+
         Story.MapItemQuest(2215, "battleunderd", 1288);
     }
 

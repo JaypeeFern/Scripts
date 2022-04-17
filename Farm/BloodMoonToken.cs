@@ -1,4 +1,4 @@
-﻿//cs_include Scripts/CoreBots.cs
+//cs_include Scripts/CoreBots.cs
 using RBot;
 
 public class BloodMoonToken

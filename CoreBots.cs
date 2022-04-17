@@ -1,4 +1,4 @@
-﻿//Scripts v3.2
+//Scripts v3.2
 using RBot;
 using RBot.Items;
 using RBot.Monsters;
@@ -88,7 +88,7 @@ public class CoreBots
         {
             Logger("Bot Started");
 
-            RBotVersionChecker("4.1");
+            RBotVersionChecker("4.1.2");
 
             if (!Bot.Player.LoggedIn)
             {
@@ -163,21 +163,19 @@ public class CoreBots
                 }
                 ToBank(MiscForBank.ToArray());
             }
-
-            Random rnd = new Random();
             int MinumumDelay = 180;
             int MaximumDelay = 300;
-            int timerInterval = rnd.Next(MinumumDelay, MaximumDelay + 1);
+            int timerInterval = Bot.Runtime.Random.Next(MinumumDelay, MaximumDelay + 1);
             int SSH = 0;
             Bot.RegisterHandler(5000, s =>
             {
                 SSH++;
                 if (SSH >= (timerInterval / 5))
                 {
-                    int messageSelect = rnd.Next(1, _SavedStateRNG.Length);
+                    int messageSelect = Bot.Runtime.Random.Next(1, _SavedStateRNG.Length);
                     Bot.SendMSGPacket("Ignore the whisper below, this is to save your player data", "Saved-State", "moderator");
-                    Bot.SendWhisper(Bot.Player.Username, _SavedStateRNG[messageSelect] + $" {rnd.Next(1000, 1000000)}");
-                    timerInterval = rnd.Next(MinumumDelay, MaximumDelay);
+                    Bot.SendWhisper(Bot.Player.Username, _SavedStateRNG[messageSelect] + $" {Bot.Runtime.Random.Next(1000, 1000000)}");
+                    timerInterval = Bot.Runtime.Random.Next(MinumumDelay, MaximumDelay);
                     SSH = 0;
                 }
             }, "Saved-State Handler");
@@ -378,7 +376,16 @@ public class CoreBots
             return;
         Join(map);
         Bot.Shops.Load(shopID);
-        ShopItem item = Bot.Shops.ShopItems.First(shopitem => shopitem.Name == itemName);
+        ShopItem? item = null;
+        try
+        {
+            item = Bot.Shops.ShopItems.First(shopitem => shopitem.Name == itemName);
+        }
+        catch
+        {
+            Logger($"The bot didn't find the item [{itemName}] in the shop [{shopID}]. Map: {map}.", messageBox: true, stopBot: true);
+            return;
+        }
         quant = _CalcBuyQuantity(item, quant, shopQuant);
         if (quant <= 0)
             return;
@@ -413,7 +420,16 @@ public class CoreBots
         Join(map);
         Bot.Shops.Load(shopID);
         Bot.Sleep(ActionDelay);
-        ShopItem item = Bot.Shops.ShopItems.First(shopitem => shopitem.ID == itemID);
+        ShopItem? item = null;
+        try
+        {
+            item = Bot.Shops.ShopItems.First(shopitem => shopitem.ID == itemID);
+        }
+        catch
+        {
+            Logger($"The bot didn't find the item with ID [{itemID}] in the shop [{shopID}]. Map: {map}.", messageBox: true, stopBot: true);
+            return;
+        }
         quant = _CalcBuyQuantity(item, quant, shopQuant);
         if (quant <= 0)
             return;
@@ -434,6 +450,8 @@ public class CoreBots
 
     private void _BuyItem(int shopID, ShopItem item, int quant, int shopQuant, int shopItemID)
     {
+        Bot.Events.ExtensionPacketReceived += RelogRequieredListener;
+
         if (shopItemID == 0)
         {
             for (int i = 0; i < quant; i++)
@@ -450,6 +468,28 @@ public class CoreBots
         if (CheckInventory(item.Name, quant))
             Logger($"Bought {quant}x{shopQuant} {item.Name}");
         else Logger($"Failed at buying {quant}x{shopQuant} {item.Name}");
+
+        Bot.Events.ExtensionPacketReceived -= RelogRequieredListener;
+
+        void RelogRequieredListener(ScriptInterface Bot, dynamic packet)
+        {
+            string type = packet["params"].type;
+            dynamic data = packet["params"].dataObj;
+            if (type == "json")
+            {
+                string str = data.strMessage;
+                switch (str)
+                {
+                    case "Item is not buyable. Item Inventory full. Re-login to syncronize your real bag slot amount.":
+
+                        Logger("Inventory de-sync (AE Issue) detected, reloggin so the bot can continue");
+                        Relogin();
+
+
+                        break;
+                }
+            }
+        }
     }
 
     private int _CalcBuyQuantity(ShopItem item, int quant, int shopQuant)
@@ -628,7 +668,15 @@ public class CoreBots
     public bool isCompletedBefore(int QuestID)
     {
         Quest QuestData = EnsureLoad(QuestID);
-        return QuestData.Slot < 0 || Bot.CallGameFunction<int>("world.getQuestValue", QuestData.Slot) >= QuestData.Value;
+        try
+        {
+            return QuestData.Slot < 0 || Bot.CallGameFunction<int>("world.getQuestValue", QuestData.Slot) >= QuestData.Value;
+        }
+        catch
+        {
+            QuestData = Bot.Quests.EnsureLoad(QuestID);
+            return QuestData.Slot < 0 || Bot.CallGameFunction<int>("world.getQuestValue", QuestData.Slot) >= QuestData.Value;
+        }
     }
 
     #endregion
@@ -895,7 +943,10 @@ public class CoreBots
         if (messageBox & !ForceOffMessageboxes)
             Message(message, caller);
         if (stopBot)
+        {
+            scriptFinished = false;
             Bot.Stop();
+        }
     }
 
     /// <summary>
@@ -940,23 +991,11 @@ public class CoreBots
     /// </summary>
     public void Relogin()
     {
-        bool autoRelogSwitch = Bot.Options.AutoRelogin;
-        Bot.Options.AutoRelogin = false;
-        Bot.Sleep(2000);
-        Logger("Re-login started");
-        Bot.Player.Logout();
-        Bot.Sleep(5000);
-        Server? server = Bot.Options.AutoReloginAny
-                ? ServerList.Servers.Find(x => x.IP != ServerList.LastServerIP)
-                : ServerList.Servers.Find(s => s.IP == ServerList.LastServerIP) ?? ServerList.Servers[0];
-        Bot.Player.Login(Bot.Player.Username, Bot.Player.Password);
-        Bot.Sleep(1000);
-        Bot.Player.Connect(server);
-        while (!Bot.Player.LoggedIn)
-            Bot.Sleep(500);
-        Bot.Sleep(5000);
-        Logger("Re-login finished");
-        Bot.Options.AutoRelogin = autoRelogSwitch;
+        for (int i = 0; i < 3; i++)
+        {
+            if (Bot.Player.Relogin())
+                break;
+        }
     }
 
     /// <summary>
@@ -1126,6 +1165,7 @@ public class CoreBots
         }
     }
 
+    private bool scriptFinished = true;
     /// <summary>
     /// Stops the bot and moves you back to /Battleon
     /// </summary>
@@ -1136,10 +1176,9 @@ public class CoreBots
         if (Bot.Player.LoggedIn)
         {
             Bot.Player.Join("battleon");
-            Random rnd = new Random();
-            int messageSelect = rnd.Next(1, _SavedStateRNG.Length);
+            int messageSelect = Bot.Runtime.Random.Next(1, _SavedStateRNG.Length);
             Bot.SendMSGPacket("Final Saved-State before ending the bot", "Saved-State", "moderator");
-            Bot.SendWhisper(Bot.Player.Username, _SavedStateRNG[messageSelect] + $" {rnd.Next(1000, 1000000)}");
+            Bot.SendWhisper(Bot.Player.Username, _SavedStateRNG[messageSelect] + $" {Bot.Runtime.Random.Next(1000, 1000000)}");
         }
         if (AntiLag)
         {
@@ -1151,7 +1190,7 @@ public class CoreBots
         Bot.Options.CustomGuild = GuildRestore;
         if (Bot.Player.LoggedIn)
             Logger("Bot Stopped Successfully");
-        return true;
+        return scriptFinished;
     }
 
     private string[] _SavedStateRNG =
@@ -1260,7 +1299,6 @@ public class CoreBots
         {
             if (_pad == pad)
                 continue;
-            Bot.Log(_pad);
             Bot.Player.Jump(cell, _pad);
             Bot.Sleep(200);
             if (Bot.Player.X != 480 || Bot.Player.Y != 275)
@@ -1278,8 +1316,6 @@ public class CoreBots
         if (!MonsterCells.Contains(Bot.Player.Cell))
             return;
 
-        bool Restore = Bot.Options.AggroMonsters;
-        Bot.Options.AggroMonsters = false;
         string cell = "";
         string pad = "";
         bool jumpTwice = false;
@@ -1322,9 +1358,6 @@ public class CoreBots
             Bot.Sleep(ExitCombatDelay - 200);
             Bot.Wait.ForCombatExit();
         }
-
-        if (Restore)
-            Bot.Options.AggroMonsters = true;
     }
     private string lastJumpWait = "";
 
@@ -1343,7 +1376,6 @@ public class CoreBots
 
         string[] disabledMaps =
         {
-            "curio",
             "tower"
         };
 
@@ -1381,7 +1413,7 @@ public class CoreBots
         while (Bot.Player.Cell != cell)
         {
             Bot.SendPacket($"%xt%zm%mv%{Bot.Map.RoomID}%{moveX}%{moveY}%8%");
-            Bot.Sleep(1500);
+            Bot.Sleep(2500);
             Bot.SendPacket($"%xt%zm%mtcid%{Bot.Map.RoomID}%{mtcid}%");
         }
     }

@@ -13,21 +13,26 @@ public class CoreHollowborn
     {
         if (Core.CheckInventory("Lae\'s Hardcore Contract"))
             return;
+
+        Core.AddDrop("Human Soul", "Fallen Soul", "Lae\'s Hardcore Contract");
         Farm.IcestormArena(65);
 
-        Core.AddDrop("Soul Potion", "Dried Slime", "Arashtite Ore", "Human Soul", "Fallen Soul", "Lae\'s Hardcore Contract");
         Core.Logger("Getting Lae's Hardcore Contract");
+        Core.EnsureAccept(7556);
+
         if (!Core.CheckInventory("Soul Potion"))
         {
-            Core.Logger("Getting Soul Potion");
-            Core.EquipClass(ClassType.Farm);
-            Core.HuntMonster("orecavern", "Crashroom", "Dried Slime", 1, false);
-            Core.HuntMonster("orecavern", "Deathmole", "Arashtite Ore", 1, false);
-            Farm.AlchemyPacket("Dried Slime", "Arashtite Ore", AlchemyRunes.Gebo, rank: 8, loop: false, modifier: "Man");
+            Farm.Gold(2500000);
+            Core.BuyItem("alchemyacademy", 2036, "Gold Voucher 500k", 5);
+            Core.BuyItem("alchemyacademy", 2036, "Soul Potion");
+            Bot.Wait.ForItemBuy();
         }
+
         HumanSoul(50);
+
         Core.EquipClass(ClassType.Solo);
         Core.HuntMonster("doomwood", "Undead Paladin", "Fallen Soul", 13, false);
+
         Core.EnsureComplete(7556);
     }
 
@@ -35,20 +40,23 @@ public class CoreHollowborn
     {
         if (Core.CheckInventory("Human Soul", quant))
             return;
+
         Core.AddDrop("Human Soul");
+
         Core.EquipClass(ClassType.Farm);
         Core.KillMonster("noxustower", "r14", "Left", "*", "Human Soul", quant, false);
     }
 
-    public void FreshSouls( int quant = 350)
+    public void FreshSouls(int quant = 350)
     {
         if (Core.CheckInventory("Fresh Soul", quant))
             return;
 
         Core.AddDrop("Fresh Soul", "Unidentified 36");
-
         Farm.Experience(50);
+
         Core.Logger($"Farming x{quant} Fresh Soul");
+
         while (!Core.CheckInventory("Fresh Soul", quant))
         {
             Core.EnsureAccept(7293);

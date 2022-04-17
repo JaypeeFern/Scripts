@@ -3,8 +3,8 @@
 //cs_include Scripts/CoreAdvanced.cs
 //cs_include Scripts/CoreFarms.cs
 //cs_include Scripts/Nulgath/CoreNulgath.cs
-//cs_include Scripts/Story/CitadelRuins.cs
-//cs_include Scripts/Story/LivingDungeon.cs
+//cs_include Scripts/Story/Nation/CitadelRuins.cs
+//cs_include Scripts/Story/QueenofMonsters/Extra/LivingDungeon.cs
 //cs_include Scripts/Story/DragonFableOrigins.cs
 using RBot;
 
@@ -93,7 +93,6 @@ public class LordOfOrder
                 Core.BuyItem("tercessuinotlim", 1951, "Receipt of Swindle", 2);
                 Core.BuyItem("tercessuinotlim", 1951, "Chaoroot", 15, 10);
             }
-            Core.HuntMonster("ledgermayne", "Ledgermayne", "The Supreme Arcane Staff", isTemp: false);
             Core.HuntMonster("chaosboss", "Ultra Chaos Warlord", "Chaotic War Essence", 15, false);
             Core.HuntMonster("shadowgates", "Chaorruption", "Chaorrupting Particles", 15, false);
             Core.HuntMonster("stormtemple", "Chaos Lord Lionfang", "Purified Raindrop", 45, false, publicRoom: true);
@@ -228,6 +227,8 @@ public class LordOfOrder
         Core.EquipClass(ClassType.Solo);
         Core.HuntMonster("ultradrakath", "Champion of Chaos", "Champion of Chaos Confronted", isTemp: false, publicRoom: true);
         Core.EnsureComplete(7165);
+
+        Bot.Wait.ForPickup("Lord of Order");
 
         if (rankUpClass)
             Adv.rankUpClass("Lord Of Order");

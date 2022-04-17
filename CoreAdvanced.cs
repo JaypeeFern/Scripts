@@ -239,8 +239,6 @@ public class CoreAdvanced
                 List<ShopItem> BestTwo = ListMinToMax.Skip(ListMinToMax.Count - 2).ToList();
                 ShopItem SelectedEhn = new ShopItem();
 
-                Bot.Log($"{AvailableEnh.Count}");
-
                 if (BestTwo.First().Level == BestTwo.Last().Level)
                     if (Core.IsMember)
                         SelectedEhn = BestTwo.First(x => x.Upgrade);
@@ -450,8 +448,8 @@ public class CoreAdvanced
 
         string MonsterRace = "";
         if (Monster != "*")
-            MonsterRace = Bot.Monsters.MapMonsters.First(x => x.Name.ToLower() == Monster.ToLower()).Race;
-        else MonsterRace = Bot.Monsters.CurrentMonsters.First().Race;
+            MonsterRace = Bot.Monsters.MapMonsters.First(x => x.Name.ToLower() == Monster.ToLower()).Race ?? "";
+        else MonsterRace = Bot.Monsters.CurrentMonsters.First().Race ?? "";
 
         if (MonsterRace == null || MonsterRace == "")
             return;
@@ -577,15 +575,8 @@ public class CoreAdvanced
             Core.AddDrop(item);
 
         Core.Join(map, cell, pad, publicRoom: publicRoom);
-
         _RaceGear(monster);
-
-        Core.Join(map, cell, pad, publicRoom: publicRoom);
-        while (Bot.Player.Cell != cell)
-        {
-            Core.Jump(cell, pad);
-            Bot.Sleep(700);
-        }
+        Core.Jump(cell, pad);
 
         Bot.Events.CounterAttack += _KillUltra;
 
@@ -615,6 +606,7 @@ public class CoreAdvanced
                 }
                 if (!Bot.Player.InCombat)
                     Core.Rest();
+                Bot.Wait.ForDrop(item);
             }
         }
 

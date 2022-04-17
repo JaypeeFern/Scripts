@@ -2,6 +2,7 @@ using RBot;
 using RBot.Items;
 using RBot.Quests;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 public class CoreStory
 {
@@ -34,10 +35,12 @@ public class CoreStory
         Core.SmartKillMonster(QuestID, MapName, MonsterName, 50, Requirements[0].Coins);
         if (Bot.Quests.CanComplete(QuestID))
         {
+            Bot.Sleep(Core.ActionDelay);
             if (AutoCompleteQuest)
                 Core.EnsureComplete(QuestID);
             Bot.Wait.ForQuestComplete(QuestID);
             Core.Logger($"Completed \"{QuestData.Name}\" [{QuestID}]");
+            Bot.Sleep(Core.ActionDelay);
         }
     }
 
@@ -61,10 +64,12 @@ public class CoreStory
         Core.SmartKillMonster(QuestID, MapName, MonsterNames, 50, Requirements[0].Coins);
         if (Bot.Quests.CanComplete(QuestID))
         {
+            Bot.Sleep(Core.ActionDelay);
             if (AutoCompleteQuest)
                 Core.EnsureComplete(QuestID);
             Bot.Wait.ForQuestComplete(QuestID);
             Core.Logger($"Completed \"{QuestData.Name}\" [{QuestID}]");
+            Bot.Sleep(Core.ActionDelay);
         }
     }
 
@@ -89,10 +94,12 @@ public class CoreStory
         Core.GetMapItem(MapItemID, Amount, MapName);
         if (Bot.Quests.CanComplete(QuestID))
         {
+            Bot.Sleep(Core.ActionDelay);
             if (AutoCompleteQuest)
                 Core.EnsureComplete(QuestID);
             Bot.Wait.ForQuestComplete(QuestID);
             Core.Logger($"Completed \"{QuestData.Name}\" [{QuestID}]");
+            Bot.Sleep(Core.ActionDelay);
         }
     }
 
@@ -118,10 +125,12 @@ public class CoreStory
             Core.GetMapItem(MapItemID, Amount, MapName);
         if (Bot.Quests.CanComplete(QuestID))
         {
+            Bot.Sleep(Core.ActionDelay);
             if (AutoCompleteQuest)
                 Core.EnsureComplete(QuestID);
             Bot.Wait.ForQuestComplete(QuestID);
             Core.Logger($"Completed \"{QuestData.Name}\" [{QuestID}]");
+            Bot.Sleep(Core.ActionDelay);
         }
     }
 
@@ -146,10 +155,12 @@ public class CoreStory
         Core.BuyItem(MapName, ShopID, ItemName, Amount);
         if (Bot.Quests.CanComplete(QuestID))
         {
+            Bot.Sleep(Core.ActionDelay);
             if (AutoCompleteQuest)
                 Core.EnsureComplete(QuestID);
             Bot.Wait.ForQuestComplete(QuestID);
             Core.Logger($"Completed \"{QuestData.Name}\" [{QuestID}]");
+            Bot.Sleep(Core.ActionDelay);
         }
     }
 
@@ -167,6 +178,7 @@ public class CoreStory
         if (QuestProgression(QuestID, GetReward, Reward))
             return;
 
+        Bot.Sleep(Core.ActionDelay);
         if (AutoCompleteQuest)
             Core.ChainComplete(QuestID);
         else
@@ -175,6 +187,7 @@ public class CoreStory
         }
         Bot.Wait.ForQuestComplete(QuestID);
         Core.Logger($"Completed \"{QuestData.Name}\" [{QuestID}]");
+        Bot.Sleep(Core.ActionDelay);
     }
 
     /// <summary>
@@ -208,7 +221,13 @@ public class CoreStory
         }
 
         if (!Bot.Quests.IsUnlocked(QuestID))
-            Core.Logger($"Quest \"{QuestData.Name}\" [{QuestID}] is not unlocked, please report the issue here https://discord.io/AQWBots (#rbot-questions-help)", messageBox: true, stopBot: true);
+        {
+            Core.Logger($"Quest \"{QuestData.Name}\" [{QuestID}] is not unlocked, please fill in the RBot Scripts Form to report this. Do you wish to be brought to the form?");
+            DialogResult response = MessageBox.Show($"Quest \"{QuestData.Name}\" [{QuestID}] is not unlocked, please fill in the RBot Scripts Form to report this.\nDo you wish to be brought to the form?", "Quest not unlocked", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+            if (response == DialogResult.Yes)
+                Process.Start("explorer", "https://forms.gle/sbp57LBQP5WvCH2B9");
+            Core.StopBot();
+        }
 
         if (Core.isCompletedBefore(QuestID) && (TestBot ? QuestData.Once : true))
         {
@@ -261,7 +280,6 @@ public class CoreStory
             "Core.EnsureCompleteChoose",
             "Core.ChainComplete"
         };
-
 
         List<string> CSIncludes = CSFile.Where(x => x.Contains("//cs_include ") && (x.Contains("Core13LoC") || !x.Contains("Core"))).ToList();
 

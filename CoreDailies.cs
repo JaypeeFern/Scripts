@@ -1,4 +1,4 @@
-﻿using RBot;
+using RBot;
 using RBot.Items;
 using RBot.Shops;
 using RBot.Quests;
@@ -107,7 +107,7 @@ public class CoreDailies
     /// </summary>
     /// <param name="metals">Metals you want to be collected</param>
     /// <param name="quant">Quantity you want of the metals</param>
-    public void MineCrafting(string[]? metals = null, int quant = 2)
+    public void MineCrafting(string[]? metals = null, int quant = 10)
     {
         if (metals == null)
             metals = MineCraftingMetals;

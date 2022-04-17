@@ -1,4 +1,4 @@
-﻿using RBot;
+using RBot;
 using System.Windows.Forms;
 
 public class CoreLegion
@@ -50,18 +50,21 @@ public class CoreLegion
         Core.AddDrop("Dark Token");
         Core.Logger($"Farming {quant} Dark Tokens");
         Core.EquipClass(ClassType.Farm);
+        Adv.SmartEnhance(Bot.Inventory.CurrentClass.Name);
         Adv.BestGear(GearBoost.Human);
+        Core.Logger($"Starting off with {Bot.Inventory.GetQuantity("Dark Token")} Dark Tokens");
         while (!Bot.Inventory.Contains("Dark Token", quant))
         {
             Core.EnsureAccept(6248, 6249, 6251);
-            Core.KillMonster("seraphicwardage", "r3", "Right", "*", "Seraphic Commanders Slain", 6);
+            Core.KillMonster("seraphicwardage", "r3", "Right", "*", "Seraphic Commanders Slain", 6, log: false);
             Core.EnsureComplete(6251);
+
             while (Bot.Inventory.ContainsTempItem("Seraphic Medals", 5))
                 Core.ChainComplete(6248);
             while (Bot.Inventory.ContainsTempItem("Mega Seraphic Medals", 3))
                 Core.ChainComplete(6249);
             Bot.Player.Pickup("Dark Token");
-            Core.Logger($"Completed x{i++}");
+            Core.Logger($"{Bot.Inventory.GetQuantity("Dark Token")} Dark Tokens");
         }
     }
 
