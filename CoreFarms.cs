@@ -56,8 +56,37 @@ public class CoreFarms
     {
         if (Bot.Player.Gold >= quant)
             return;
-        BattleGroundE(quant);
+
+        HonorHall(quant);
+        // BattleGroundE(quant);
+        FireWarGold(quant);
         BerserkerBunny(quant);
+    }
+
+    /// <summary>
+    /// Farms Gold in HonorHall (members) with quests HonorHall Mobs and 61-75
+    /// </summary>
+    /// <param name="goldQuant">How much gold to farm</param>
+    public void HonorHall(int goldQuant = 100000000)
+    {
+        if (!Core.IsMember)
+            return;
+        if (Bot.Player.Level < 61)
+            return;
+        if (Bot.Player.Gold >= goldQuant)
+            return;
+
+        Core.EquipClass(ClassType.Farm);
+        Core.Logger($"Farming {goldQuant} gold using HonorHall Method");
+        int i = 1;
+        while (Bot.Player.Gold < goldQuant && Bot.Player.Gold <= 100000000)
+        {
+            Core.EnsureAccept(3992, 3993);
+            Core.KillMonster("honorhall", "r1", "Center", "*", "Battleground E Opponent Defeated", 10, log: false);
+            Core.KillMonster("honorhall", "r1", "Center", "*", "HonorHall Opponent Defeated", 10, log: false);
+            Core.EnsureComplete(new[] { 3992, 3993 });
+            Core.Logger($"Completed x{i++}");
+        }
     }
 
     /// <summary>
@@ -71,7 +100,7 @@ public class CoreFarms
         if (Bot.Player.Level < 61)
             return;
         Core.EquipClass(ClassType.Farm);
-        Core.Logger($"Farming {goldQuant} gold");
+        Core.Logger($"Farming {goldQuant} gold using BattleGroundE Method");
         int i = 1;
         while (Bot.Player.Gold < goldQuant && Bot.Player.Gold <= 100000000)
         {
@@ -80,6 +109,44 @@ public class CoreFarms
             Core.KillMonster("battlegrounde", "r2", "Center", "*", "Battleground E Opponent Defeated", 10, log: false);
             Core.EnsureComplete(new[] { 3991, 3992 });
             Core.Logger($"Completed x{i++}");
+        }
+    }
+
+    /// <summary>
+    /// Farms Gold in FireWar with the fire Dragon Scales & Hearts war turn-ins
+    /// </summary>
+    /// <param name="goldQuant">How much gold to farm</param>
+    public void FireWarGold(int goldQuant = 100000000)
+    {
+        if (Bot.Player.Gold >= goldQuant)
+            return;
+        if (Bot.Player.Level < 50)
+            return;
+
+        Core.AddDrop("");
+        Core.EquipClass(ClassType.Farm);
+        Core.Logger($"Farming {goldQuant} gold using FireWarGold Method");
+        int Scale = 1;
+        int Heart = 1;
+
+        Core.Join("firewar", "r2", "Bottom");
+        Bot.Player.SetSpawnPoint();
+        while (Bot.Player.Gold < goldQuant && Bot.Player.Gold <= 100000000)
+        {
+            Bot.Player.Attack("*");
+
+            if (Core.CheckInventory("Fire Dragon Scale", 5))
+            {
+                Bot.Quests.Complete(6294);
+                Bot.Sleep(Core.ActionDelay);
+                Core.Logger($"Completed x{Scale++}");
+            }
+            if (Core.CheckInventory("Fire Dragon Heart", 3))
+            {
+                Bot.Quests.Complete(6295);
+                Bot.Sleep(Core.ActionDelay);
+                Core.Logger($"Completed x{Heart++}");
+            }
         }
     }
 
@@ -93,7 +160,7 @@ public class CoreFarms
             return;
         Core.AddDrop("Berserker Bunny");
         Core.EquipClass(ClassType.Solo);
-        Core.Logger($"Farming {goldQuant} gold");
+        Core.Logger($"Farming {goldQuant}  using BerserkerBunny Method");
         int i = 1;
         while (Bot.Player.Gold < goldQuant && Bot.Player.Gold <= 100000000)
         {
@@ -113,7 +180,7 @@ public class CoreFarms
     {
         if (Bot.Player.Level >= level)
             return;
-        IcestormArena(level);
+        FireWarXP();
     }
 
     /// <summary>
@@ -195,6 +262,44 @@ public class CoreFarms
             Bot.Player.Pickup("Essence of Wrath", "Souls of Heresy");
         }
     }
+
+
+
+    /// <summary>
+    /// Farms Gold in FireWar with the fire Dragon Scales & Hearts war turn-ins
+    /// </summary>
+    /// <param name="goldQuant">How much gold to farm</param>
+    public void FireWarXP(int Level = 100)
+    {
+        if (Bot.Player.Level < 50)
+            IcestormArena(50);
+
+        Core.AddDrop("");
+        Core.EquipClass(ClassType.Farm);
+        int Scale = 1;
+        int Heart = 1;
+
+        
+        Core.Join("firewar", "r2", "Bottom");
+        Bot.Player.SetSpawnPoint();
+        while (Bot.Player.Level < Level)
+        {
+            Bot.Player.Attack("*");
+
+            if (Core.CheckInventory("Fire Dragon Scale", 5))
+            {
+                Bot.Quests.Complete(6294);
+                Bot.Sleep(Core.ActionDelay);
+                Core.Logger($"Completed x{Scale++}");
+            }
+            if (Core.CheckInventory("Fire Dragon Heart", 3))
+            {
+                Bot.Quests.Complete(6295);
+                Bot.Sleep(Core.ActionDelay);
+                Core.Logger($"Completed x{Heart++}");
+            }
+        }
+    }
     #endregion
 
     #region Misc
@@ -226,7 +331,7 @@ public class CoreFarms
         Core.JumpWait();
         while (!Core.CheckInventory("The Secret 4"))
         {
-            Bot.Player.Join("bludrutbrawl", "Enter0", "Spawn", ignoreCheck: true);
+            Core.Join("bludrutbrawl", "Enter0", "Spawn", ignoreCheck: true);
             Bot.Wait.ForMapLoad("bludrutbrawl");
             Core.BludrutMove(5, "Morale0C");
             Core.BludrutMove(4, "Morale0B");
@@ -258,13 +363,16 @@ public class CoreFarms
     {
         if (Core.CheckInventory(item, quant))
             return;
-        Core.EquipClass(ClassType.Solo);
+
         Core.AddDrop(item);
+
+        Core.EquipClass(ClassType.Solo);
         Core.Logger($"Farming {quant} {item}. SoloBoss = {canSoloBoss}");
-        Core.JumpWait();
+
         while (!Core.CheckInventory(item, quant))
         {
-            Bot.Player.Join("bludrutbrawl", "Enter0", "Spawn", ignoreCheck: true);
+            Core.AddDrop(item);
+            Core.Join("bludrutbrawl", "Enter0", "Spawn");
             Bot.Wait.ForMapLoad("bludrutbrawl");
             Core.BludrutMove(5, "Morale0C");
             Core.BludrutMove(4, "Morale0B");
@@ -294,14 +402,14 @@ public class CoreFarms
                 Bot.Player.Kill("Team B Brawler");
             Core.BludrutMove(28, "Captain1", 528, 255);
             Bot.Player.Kill("Team B Captain");
-            if (!Core.CheckInventory(item))
+            Bot.Wait.ForPickup(item);
+            while (Bot.Map.Name != "battleon")
             {
-                Bot.Wait.ForDrop(item, 30);
-                Bot.Player.Pickup(item);
-            }
-            else
                 Bot.Sleep(5000);
-            Core.Rest();
+                Core.Join("battleon");
+                Bot.Wait.ForMapLoad("battleon");
+            }
+
         }
     }
 
@@ -314,7 +422,7 @@ public class CoreFarms
         Core.EquipClass(ClassType.Farm);
 
         Core.JumpWait();
-        Bot.Player.Join("battleunderb", "Enter", "Spawn", ignoreCheck: true);
+        Core.Join("battleunderb", "Enter", "Spawn", ignoreCheck: true);
         Bot.Wait.ForMapLoad("battleunderb".ToLower());
 
         Bot.Options.AggroMonsters = true;
@@ -852,7 +960,7 @@ public class CoreFarms
         while (FactionRank("Dreadfire") < rank)
         {
             Core.EnsureAccept(5697);
-            Core.KillMonster("dreadfire", "Arcane Crystal", "r13", "Bottom", "Perfect Crystal Orb", 1);
+            Core.KillMonster("dreadfire", "r13", "Bottom", "Arcane Crystal", "Perfect Crystal Orb");
             Core.EnsureComplete(5697);
             Core.Logger($"Completed x{i++}");
         }
@@ -990,6 +1098,7 @@ public class CoreFarms
         Core.ChangeAlignment(Alignment.Evil);
         Core.Logger($"Farming rank {rank}");
         int i = 1;
+        Core.EquipClass(ClassType.Farm);
         if (Core.IsMember)
             MembershipDues(MemberShipsIDS.Evil);
         else
@@ -1033,7 +1142,7 @@ public class CoreFarms
             {
                 Core.EquipClass(ClassType.Solo);
                 Core.EnsureAccept(6775);
-                Core.HuntMonster("rainbow", "Lucky Harms ", "Four Leaf Clover", 3);
+                Core.HuntMonster("rainbow", "Lucky Harms", "Four Leaf Clover", 3);
                 Core.EnsureComplete(6775);
                 Core.Logger($"Completed x{i++}");
             }
@@ -1077,6 +1186,7 @@ public class CoreFarms
         Core.ChangeAlignment(Alignment.Good);
         Core.Logger($"Farming rank {rank}");
         int i = 1;
+        Core.EquipClass(ClassType.Farm);
         if (Core.IsMember)
             MembershipDues(MemberShipsIDS.Good);
         else
@@ -1111,6 +1221,7 @@ public class CoreFarms
             return;
 
         Experience(15);
+        Core.EquipClass(ClassType.Farm);
         Core.Logger($"Farming rank {rank}");
         while (FactionRank("Loremaster") < rank)
         {
@@ -1164,6 +1275,8 @@ public class CoreFarms
         }
         Core.Logger($"Farming rank {rank}");
         int i = 1;
+
+        Core.EquipClass(ClassType.Solo);
         while (FactionRank("Lycan") < rank)
         {
             Core.EnsureAccept(537);
@@ -1184,6 +1297,7 @@ public class CoreFarms
         while (FactionRank("Hollowborn") < rank)
         {
             Core.EnsureAccept(7553, 7555);
+            Core.EquipClass(ClassType.Farm);
             Core.KillMonster("shadowrealm", "r2", "Down", "*", "Darkseed", 8);
             Core.KillMonster("shadowrealm", "r2", "Down", "*", "Shadow Medallion", 5);
             Core.EnsureComplete(new[] { 7553, 7555 });
@@ -1232,6 +1346,7 @@ public class CoreFarms
     {
         if (FactionRank("Monster Hunter") >= rank)
             return;
+        Core.EquipClass(ClassType.Farm);
         if (!Bot.Quests.IsAvailable(5850))
         {
             Core.EnsureAccept(5849);
@@ -1262,6 +1377,7 @@ public class CoreFarms
             return;
         Core.Logger($"Farming rank {rank}");
         int i = 1;
+        Core.EquipClass(ClassType.Farm);
         if (!Bot.Quests.IsAvailable(5429))
         {
             Core.Join("cursedshop");
@@ -1462,6 +1578,7 @@ public class CoreFarms
             return;
         Core.AddDrop("Mystic Quills", "Mystic Parchment");
         Core.Logger($"Farming rank {rank}");
+        Core.EquipClass(ClassType.Farm);
 
         if (FactionRank("SpellCrafting") == 0)
         {
@@ -1666,63 +1783,58 @@ public class CoreFarms
         Core.Logger($"Farming rank {rank}");
         int i = 1;
         int z = 1;
-        while (FactionRank("Fishing") < rank)
-        {
-            Core.AddDrop("Fishing Bait", "Fishing Dynamite");
+        Core.AddDrop("Fishing Bait", "Fishing Dynamite");
 
-            Core.Logger("Pre-Ranking XP");
+        Core.Logger("Pre-Ranking XP");
+        Core.EnsureAccept(1682);
+        Core.KillMonster("greenguardwest", "West4", "Right", "Slime", "Faith's Fi'shtick", 1, log: false);
+        Core.EnsureComplete(1682);
+
+        while (FactionRank("Fishing") < 2)
+        {
+            Core.Logger("Farming Bait");
+            while (!Core.CheckInventory("Fishing Bait", 10))
             {
                 Core.EnsureAccept(1682);
                 Core.KillMonster("greenguardwest", "West4", "Right", "Slime", "Faith's Fi'shtick", 1, log: false);
                 Core.EnsureComplete(1682);
+                Core.Logger($"Completed x{i++}");
             }
 
-            while (Bot.Player.GetFactionRank("Fishing") < 2)
+            Core.Join("fishing");
+            Core.Logger($"Bait Fishing");
+
+            while (Core.CheckInventory("Fishing Bait"))
             {
-                Core.Logger("Farming Bait");
-                while (!Core.CheckInventory("Fishing Bait", 10))
-                {
-                    Core.EnsureAccept(1682);
-                    Core.KillMonster("greenguardwest", "West4", "Right", "Slime", "Faith's Fi'shtick", 1, log: false);
-                    Core.EnsureComplete(1682);
-                    Core.Logger($"Completed x{i++}");
-                }
+                while (!Core.CheckInventory("Fishing Bait"))
+                    return;
 
-                Core.Join("fishing");
-                Core.Logger($"Bait Fishing");
+                Bot.SendPacket("%xt%zm%FishCast%1%Net%30%");
+                Bot.Sleep(10000);
+                Core.Logger($"Fished {z++} Times");
+            }
+        }
 
-                while (Core.CheckInventory("Fishing Bait"))
-                {
-                    while (!Core.CheckInventory("Fishing Bait"))
-                        return;
 
-                    Bot.SendPacket("%xt%zm%FishCast%1%Net%30%");
-                    Bot.Sleep(10000);
-                    Core.Logger($"Fished {z++} Times");
-                }
+        while (FactionRank("Fishing") < rank)
+        {
+            Core.Logger("Farming Dynamite");
+            while (!Core.CheckInventory("Fishing Dynamite", 10) && Core.CheckInventory("Fishing Bait", 1))
+            {
+                Core.EnsureAccept(1682);
+                Core.KillMonster("greenguardwest", "West4", "Right", "Slime", "Faith's Fi'shtick", 1, log: false);
+                Core.EnsureComplete(1682);
+                Core.Logger($"Completed x{i++}");
             }
 
+            Core.Logger($"Dynamite Fishing");
 
-            while (Bot.Player.GetFactionRank("Fishing") <= rank)
+            while (Core.CheckInventory("Fishing Dynamite", 1))
             {
-                Core.Logger("Farming Dynamite");
-                while (!Core.CheckInventory("Fishing Dynamite", 10) && Core.CheckInventory("Fishing Bait", 1))
-                {
-                    Core.EnsureAccept(1682);
-                    Core.KillMonster("greenguardwest", "West4", "Right", "Slime", "Faith's Fi'shtick", 1, log: false);
-                    Core.EnsureComplete(1682);
-                    Core.Logger($"Completed x{i++}");
-                }
-
-                Core.Logger($"Dynamite Fishing");
-
-                while (Core.CheckInventory("Fishing Dynamite", 1))
-                {
-                    Bot.SendPacket($"%xt%zm%FishCast%1%Dynamite%30%");
-                    Bot.Sleep(3500);
-                    Core.SendPackets("%xt%zm%getFish%1%false%");
-                    Core.Logger($"Fished {z++} Times");
-                }
+                Bot.SendPacket($"%xt%zm%FishCast%1%Dynamite%30%");
+                Bot.Sleep(3500);
+                Core.SendPackets("%xt%zm%getFish%1%false%");
+                Core.Logger($"Fished {z++} Times");
             }
         }
     }
